@@ -11,6 +11,7 @@ export default async function ListProductController(request, response) {
     const limit = parseInt(request.query.limit) || 100;
     const offset = parseInt(request.query.offset) || 0;
     const orderBy = request.query.orderBy || "id,asc";
+    const query = request.query.query || "";
 
     const [orderField, orderDirection] = orderBy.split(",");
 
@@ -29,7 +30,14 @@ export default async function ListProductController(request, response) {
 
     try {
 
+        const whereClause = query ? {
+            name: {
+                [ProductModel.sequelize.Sequelize.Op.like]: `%${query}%`
+            }
+        } : {};
+
         const { rows, count } = await ProductModel.findAndCountAll({
+            where: whereClause,
             limit: limit + 1,
             offset: offset,
             order: [[orderField, orderDirection]]
